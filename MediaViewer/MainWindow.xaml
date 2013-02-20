@@ -1,0 +1,145 @@
+﻿<Window x:Class="MediaViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:data="clr-namespace:MediaLibrary;assembly=MediaLibrary"
+        Title="ALELDJ Player" Height="380" Width="600" Icon="media\aleldj.ico" Background="#FF303030">
+    <Window.Resources>
+        <RotateTransform x:Key="buttonTransform" Angle="0" CenterX="21" CenterY="21" />
+        <data:MediaCollection x:Key="myMediaList">
+            <data:MultiMedia Title="Facts of life" Artist="Lazyboy" Album="Lazy-B Tv" Genre="Music" Type="Digital" />
+        </data:MediaCollection>
+        <Style TargetType="{x:Type Label}">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="RenderTransform" Value="{StaticResource buttonTransform}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid Width="48" Height="48">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Name="content"/>
+                            <Rectangle Width="42" Height="42" RadiusX="5" RadiusY="5" StrokeThickness="3" Stroke="LightGreen" Name="stroke"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="stroke" Property="Stroke" Value="SpringGreen" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="stroke" Property="Stroke" Value="LightCoral" />
+                            </Trigger>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation 
+                                            Storyboard.TargetProperty="(Button.RenderTransform).(RotateTransform.Angle)"
+                                            From="0" To="10" Duration="0:0:0.1"
+                                            AutoReverse="True" RepeatBehavior="6x"
+                                            />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    <Window.Triggers>
+    </Window.Triggers>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Height="24">
+            <MenuItem Header="Media">
+                <MenuItem Header="Add media" Click="BtnAddClick"/>
+                <MenuItem Header="Edit media" Click="BtnEditClick" />
+                <MenuItem Header="Remove media" Click="BtnRemoveClick"/>
+            </MenuItem>
+            <MenuItem Header="About"  Click="AboutClick"/>
+        </Menu>
+        
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="128" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <ListBox Grid.Column="0" Name="mediaList" DisplayMemberPath="MediaName" ItemsSource="{StaticResource myMediaList}" Background="Transparent" Foreground="White"/>
+            
+            <GridSplitter Name="divider" Margin="0" Width="5" Grid.Column="1" HorizontalAlignment="Left" />
+
+            <Grid Name="meatGrid" Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition MaxHeight="72" Height="24" MinHeight="24"/>
+                    <RowDefinition Height="28" />
+                    <RowDefinition Height="48"/>
+                </Grid.RowDefinitions>
+
+                <Grid Name="grid_cover" Grid.Row="0">
+                    <Canvas Name="cover_canvas">
+                        <Canvas.Background>
+                            <ImageBrush ImageSource="{Binding ElementName=mediaList, Path=SelectedItem.Cover}" Stretch="Uniform"/>
+                        </Canvas.Background>
+                    </Canvas>
+                    <MediaElement Name="mediaPlayer" MediaOpened="MediaPlayerOnMediaOpened" MediaEnded="MediaEnded" LoadedBehavior="Manual" />
+                </Grid>
+
+                <Expander Name="mediaInfo_expander" VerticalAlignment="Bottom" Height="72" ExpandDirection="Up" Collapsed="MediaInfoCollapsed" Expanded="MediaInfoExpanded" Grid.Row="1" Background="Transparent">
+                    <Expander.Triggers>
+                        <EventTrigger RoutedEvent="Expander.Expanded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation 
+                                        Storyboard.TargetName="mediaInfo_expander" 
+                                        Storyboard.TargetProperty="Height"
+                                        From="24.0" To="72.0" Duration="0:0:0.5"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Expander.Triggers>
+                    <Grid Background="Transparent">
+                        <StackPanel Orientation="Horizontal" Margin="32,0,0,0">
+                            <Label Content="Title:" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
+                            <Label Content="{Binding ElementName=mediaList, Path=SelectedItem.Title, Mode=OneWay}" FontSize="10"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="32,12,0,0">
+                            <Label Content="Artist:" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
+                            <Label Content="{Binding ElementName=mediaList, Path=SelectedItem.Artist, Mode=OneWay}" FontSize="10" />
+                            <Label Content="Album:" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Margin="20,0,0,0"/>
+                            <Label Content="{Binding ElementName=mediaList, Path=SelectedItem.Album, Mode=OneWay}" FontSize="10"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="32,24,0,0">
+                            <Label Content="Genre:" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" />
+                            <Label Content="{Binding ElementName=mediaList, Path=SelectedItem.Genre, Mode=OneWay}" FontSize="10" />
+                            <Label Content="Mediatype:" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="10" Margin="20,0,0,0"/>
+                            <Label Content="{Binding ElementName=mediaList, Path=SelectedItem.Type, Mode=OneWay}" FontSize="10"/>
+                        </StackPanel>
+                    </Grid>
+                </Expander>
+
+                <DockPanel Grid.Row="2"  Margin="20,0,20,0">
+                    <!--For Progress bar-->
+                    <ProgressBar Name="seek_bar" Height="8" Minimum="0" DockPanel.Dock="Top"/>
+                    <Label Name="playing_Label" Height="22" FontSize="8" DockPanel.Dock="Bottom"/>
+                </DockPanel>
+
+                <StackPanel Grid.Row="3"  Orientation="Horizontal" HorizontalAlignment="Center"> <!--For Media controls-->
+                    <Button Name="OpenButton" Click="BtnOpenClick" ToolTip="Open the selected media from list to your left">
+                        <Path Stroke="White" StrokeThickness="7" Data="M 4,16 L 18,8 L 32,16 M 4,28 L 18,20 L 32,28" Height="36" Width="36"/>
+                    </Button>
+                    <Button Name="PlayButton" Click="BtnPlayClick" ToolTip="Play.">
+                        <Path Stroke="White" StrokeThickness="7" Data="M 10,4 L 26,18 L 10,32" Height="36" Width="36"/><!-- Paths are fun :) -->
+                    </Button>
+                    <Button Name="PauseButton" Click="BtnPauseClick" ToolTip="Pause.">
+                        <Path Stroke="White" StrokeThickness="9" Data="M 10,4 L 10,32 M 26,4 L 26,32" Height="36" Width="36" />
+                    </Button>
+                    <Button Name="StopButton" Click="BtnStopClick" ToolTip="Stop.">
+                        <Path Stroke="White" StrokeThickness="5" Data="M 6,6 L 30,6 L 30,30 L 6,30 L 6,4 M 6,6 L 30,30 M 30,6 L 6,30" Height="36" Width="36" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+        </Grid>
+    </DockPanel>
+</Window>
